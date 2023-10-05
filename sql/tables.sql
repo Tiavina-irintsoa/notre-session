@@ -2,7 +2,8 @@ create sequence idsession;
 
 create table session_value(
     idsession varchar primary key,
-    valeur json
+    valeur json, 
+    invalidate timestamp
 );
 
 
