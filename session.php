@@ -9,8 +9,23 @@
         $pdo = connect();
         $pdo->exec($sql);
         $pdo = null; 
-        unset($_COOKIE['idsession'])
+        unset($_COOKIE['idsession']);
     }
+    function set_session( $key , $value ){
+        if($isset($_COOKIE['idsession'])) throw new Exception('Session non activee');
+        $pdo = connect();
+        save( $key , $value );
+    }
+
+    function save( $key , $value ){
+        $query = "UPDATE session_value
+        SET valeur = valeur::jsonb || '{\"%s\": \"%s\"}'::jsonb
+        WHERE idsession = '%s'";
+        echo $query;
+        $query = sprintf($query , $key , $value , $_COOKIE["idsession"]);
+        $result = $pdo->execute($sql);
+    }
+
     function get_session($key){
         if($isset($_COOKIE['idsession'])){
             throw new Exception('Session non activee');
@@ -28,8 +43,7 @@
         }
         return $result; 
     }
-    function get_all_session($pdo){
-       
+    function get_all_session($pdo){       
         $query =  "select valeur from session_value where idsession = %s"; 
         $query = sprintf($query , $idsession);
         $result = $pdo->query($sql);

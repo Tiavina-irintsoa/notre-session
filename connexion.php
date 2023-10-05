@@ -9,3 +9,7 @@ function connect(){
     $dbh = new PDO("pgsql:host=$host;port=$port;dbname=$dbname;user=$user;password=$password");
     return $dbh;
 }
+
+if( !isset( $_COOKIE["huhu"] ) )
+    $_COOKIE["huhu"] = 0;
+$_COOKIE["huhu"] += 1;
