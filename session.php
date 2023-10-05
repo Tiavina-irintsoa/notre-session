@@ -9,8 +9,12 @@
         $pdo = connect();
         $pdo->exec($sql);
         $pdo = null; 
+        unset($_COOKIE['idsession'])
     }
     function get_session($key){
+        if($isset($_COOKIE['idsession'])){
+            throw new Exception('Session non activee');
+        }
         $idsession = $_COOKIE["idsession"];
         $pdo = connect();
         $data = get_all_session($pdo); 
