@@ -15,7 +15,7 @@ create table session_value(
 
 insert into session values(( SELECT left(md5(random()::text), 14) || nextval('idsession')) );
 
--- get
+-- set
 insert into session_value values( '673c1de860392e2' , 'vaovao' , '{"nom": 1 }' );
 
 -- unset
