@@ -1,5 +1,5 @@
-// les fonctions ici 
 <?php
+// les fonctions ici 
 
     require_once('connexion.php');
     function session_invalidate(){
@@ -9,7 +9,7 @@
         $pdo = connect();
         $pdo->exec($sql);
         $pdo = null; 
-        unset($_COOKIE['idsession'])
+        unset($_COOKIE['idsession']);
     }
     function set_session( $key , $value ){
         if($isset($_COOKIE['idsession'])) throw new Exception('Session non activee');
@@ -73,14 +73,18 @@
             unset($_SESSION[$attribute]);
         }
     }
-    function session_start(){
-        if(! isset($_COOKIE['idsession']) ){
-            $query = "insert into session_value (idsession) values ( ( SELECT left(md5(random()::text), 14) || nextval('idsession')) );"; 
+    function start_session(){
+        var_dump($_COOKIE);
+        if(!isset($_COOKIE['idsession']) ){
+            $query = "insert into session_value (idsession) values ( ( SELECT left(md5(random()::text), 14) || nextval('idsession')) ) returning idsession ;"; 
             $pdo = connect();
-            $pdo->exec($query);
-            $lastInsertId = $pdo->lastInsertId();
+            
+            $result = $pdo->query($query);
+            $row = $result->fetch(PDO::FETCH_ASSOC);
+            $lastInsertId = $row['idsession'];
             $pdo = null;
-            setcookie('idsession', $lastInsertId, time() + 3600, '/');
+            // setcookie('idsession', $lastInsertId, time() + 3600, '/');
+            $_COOKIE['idsession'] = $lastInsertId;
         }
     }
 ?>
