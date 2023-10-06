@@ -9,23 +9,8 @@
         $pdo = connect();
         $pdo->exec($sql);
         $pdo = null; 
-        unset($_COOKIE['idsession']);
+        unset($_COOKIE['idsession'])
     }
-    function set_session( $key , $value ){
-        if($isset($_COOKIE['idsession'])) throw new Exception('Session non activee');
-        $pdo = connect();
-        save( $key , $value );
-    }
-
-    function save( $key , $value ){
-        $query = "UPDATE session_value
-        SET valeur = valeur::jsonb || '{\"%s\": \"%s\"}'::jsonb
-        WHERE idsession = '%s'";
-        echo $query;
-        $query = sprintf($query , $key , $value , $_COOKIE["idsession"]);
-        $result = $pdo->execute($sql);
-    }
-
     function get_session($key){
         if($isset($_COOKIE['idsession'])){
             throw new Exception('Session non activee');
@@ -43,7 +28,8 @@
         }
         return $result; 
     }
-    function get_all_session($pdo){       
+    function get_all_session($pdo){
+       
         $query =  "select valeur from session_value where idsession = %s"; 
         $query = sprintf($query , $idsession);
         $result = $pdo->query($sql);
@@ -60,6 +46,27 @@
         } else {
            
             return null;
+        }
+    }
+    function removeAttribute($attribute){
+        $idsession = $_COOKIE["idsession"];
+        $query = "UPDATE session_value SET valeur = valeur::jsonb - '%s' where idsession ='%s'"; 
+        $query = sprintf($query, $attribute, $idsession); 
+        $pdo = connect();
+        $pdo->exec($sql);
+        $pdo = null; 
+        if(isset($_SESSION[$attribute])){
+            unset($_SESSION[$attribute]);
+        }
+    }
+    function session_start(){
+        if(! isset($_COOKIE['idsession']) ){
+            $query = "insert into session_value (idsession) values ( ( SELECT left(md5(random()::text), 14) || nextval('idsession')) );"; 
+            $pdo = connect();
+            $pdo->exec($query);
+            $lastInsertId = $pdo->lastInsertId();
+            $pdo = null;
+            setcookie('idsession', $lastInsertId, time() + 3600, '/');
         }
     }
 ?>
