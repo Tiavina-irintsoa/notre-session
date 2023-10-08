@@ -1,6 +1,6 @@
 <?php
 // les fonctions ici 
-
+    
     require_once('connexion.php');
     function session_invalidate(){
         $idsession = $_COOKIE["idsession"];
@@ -42,8 +42,7 @@
         }
         return $result; 
     }
-    function get_all_session($pdo){
-       
+    function get_all_session($pdo){       
         $query =  "select valeur from session_value where idsession = %s"; 
         $query = sprintf($query , $idsession);
         $result = $pdo->query($sql);
@@ -83,7 +82,7 @@
             $row = $result->fetch(PDO::FETCH_ASSOC);
             $lastInsertId = $row['idsession'];
             $pdo = null;
-            // setcookie('idsession', $lastInsertId, time() + 3600, '/');
+            setcookie('idsession', $lastInsertId, time() + 3600, '/');
             $_COOKIE['idsession'] = $lastInsertId;
         }
     }
