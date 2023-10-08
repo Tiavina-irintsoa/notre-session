@@ -1,18 +1,20 @@
 <?php
 // les fonctions ici 
-
     require_once('connexion.php');
+    require_once('xml.php');
     function session_invalidate(){
-        $idsession = $_COOKIE["idsession"];
-        $query = "update session_value set invalide = now() where idsession = '%s'"; 
+        $idsession = $_COOKIE[getIdsessionname()];
+        $query = "UPDATE session_value
+        SET valeur = '{}'::jsonb where idsession = '%s'"; 
         $query = sprintf($query, $idsession); 
         $pdo = connect();
-        $pdo->exec($sql);
+        $pdo->exec($query);
         $pdo = null; 
-        unset($_COOKIE['idsession']);
+        unset($_COOKIE[getIdsessionname()]);
     }
+
     function set_session( $key , $value ){
-        if($isset($_COOKIE['idsession'])) throw new Exception('Session non activee');
+        if(!isset($_COOKIE[getIdsessionname()])) throw new Exception('Session non activee');
         $pdo = connect();
         save( $key , $value );
     }
@@ -21,19 +23,19 @@
         $query = "UPDATE session_value
         SET valeur = valeur::jsonb || '{\"%s\": \"%s\"}'::jsonb
         WHERE idsession = '%s'";
+        $pdo = connect();
+        $query = sprintf($query , $key , $value , $_COOKIE[getIdsessionname()]);
         echo $query;
-        $query = sprintf($query , $key , $value , $_COOKIE["idsession"]);
-        $result = $pdo->execute($sql);
+        $result = $pdo->exec($query);
     }
     function get_session($key){
-        if($isset($_COOKIE['idsession'])){
+        if(!isset($_COOKIE[getIdsessionname()])){
             throw new Exception('Session non activee');
         }
-        $idsession = $_COOKIE["idsession"];
+        $idsession = $_COOKIE[getIdsessionname()];
         $pdo = connect();
         $data = get_all_session($pdo); 
         $pdo = null;
-
         if($data == null){
             return null; 
         }
@@ -44,13 +46,14 @@
     }
     function get_all_session($pdo){
        
-        $query =  "select valeur from session_value where idsession = %s"; 
+        $query =  "select valeur from session_value where idsession = '%s' "; 
+        $idsession = $_COOKIE[getIdsessionname()];
         $query = sprintf($query , $idsession);
-        $result = $pdo->query($sql);
+        $result = $pdo->query($query);
         if ($result) {
             $row = $result->fetch(PDO::FETCH_ASSOC);
             if ($row) {
-                $jsonData = $row['json_data'];
+                $jsonData = $row['valeur'];
                 $parsedData = json_decode($jsonData, true);
                 return $parsedData; 
             } else {
@@ -63,11 +66,11 @@
         }
     }
     function removeAttribute($attribute){
-        $idsession = $_COOKIE["idsession"];
+        $idsession = $_COOKIE[getIdsessionname()];
         $query = "UPDATE session_value SET valeur = valeur::jsonb - '%s' where idsession ='%s'"; 
         $query = sprintf($query, $attribute, $idsession); 
         $pdo = connect();
-        $pdo->exec($sql);
+        $pdo->exec($query);
         $pdo = null; 
         if(isset($_SESSION[$attribute])){
             unset($_SESSION[$attribute]);
@@ -75,16 +78,19 @@
     }
     function start_session(){
         var_dump($_COOKIE);
-        if(!isset($_COOKIE['idsession']) ){
-            $query = "insert into session_value (idsession) values ( ( SELECT left(md5(random()::text), 14) || nextval('idsession')) ) returning idsession ;"; 
+        if(!isset($_COOKIE[getIdsessionname()]) ){
+            $query = "insert into session_value (idsession , valeur ) values ( ( SELECT left(md5(random()::text), 14) || nextval( 'idsession' )) , '{}' ) returning idsession ;"; 
             $pdo = connect();
-            
+            echo $query;
             $result = $pdo->query($query);
             $row = $result->fetch(PDO::FETCH_ASSOC);
             $lastInsertId = $row['idsession'];
             $pdo = null;
-            // setcookie('idsession', $lastInsertId, time() + 3600, '/');
-            $_COOKIE['idsession'] = $lastInsertId;
+            echo getIdsessionname();
+            setcookie(getIdsessionname(), $lastInsertId, time() + 3600, '/');
+            //forcer cookie 
+            $_COOKIE[getIdsessionname()] = $lastInsertId;
+            echo 'session ao';
         }
     }
 ?>

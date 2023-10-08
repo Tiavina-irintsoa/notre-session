@@ -7,12 +7,15 @@ create table session_value(
 );
 
 
+alter table session_value 
+    add column date_insertion timestamp default now();
+
 -- insert
 insert into session_value values( ( SELECT left(md5(random()::text), 14) || nextval('idsession'))  , '{"nom": 1 }' );
 
 -- set
 UPDATE session_value
-SET valeur = valeur::jsonb || '{"nom": "new_value"}'::jsonb
+SET valeur = valeur::jsonb || '{"nom": "new_value"}'::jsonb;
 
 -- unset
 UPDATE session_value
@@ -20,3 +23,5 @@ SET valeur = valeur::jsonb - 'nom' where idsession = ....
 
 -- get
 SELECT valeur->>'nom' as nombre FROM session_value;
+
+alter table 
