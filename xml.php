@@ -1,9 +1,9 @@
 <?php
     function getIdsessionname(){
-        $xml = simplexml_load_file('config.xml');
-    
-        $idessionValue = (string)$xml->idsession;
+        $jsonData = file_get_contents('config.json');
 
-        return trim($idessionValue) ;
+        $data = json_decode($jsonData, true);
+
+        return $data['idsession-name'];
     }
 ?>
